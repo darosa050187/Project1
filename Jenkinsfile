@@ -3,7 +3,7 @@ pipeline {
 	agent any
 	
 	tools {
-        maven "MAVEN3.9.9"
+        maven "MAVEN3.9"
         jdk "JDK17"
     }
 	
@@ -19,7 +19,7 @@ pipeline {
 	
     stages{
         
-        stage('BUILD'){
+        stage('BUILD') {
             steps {
                 sh 'mvn clean install -DskipTests'
             }
