@@ -109,7 +109,7 @@ pipeline {
                 }
             }
         }
-        stage("Deploy artifact ${ARTIFACT_NAME} to AWS Elastic Beanstalk") {
+        stage('Deploy artifact to AWS Elastic Beanstalk') {
             steps {
                 script {
                     echo "Deploying ${ARTIFACT_NAME} artifact to AWS Elastic Beanstalk..."
