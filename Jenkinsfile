@@ -100,7 +100,7 @@ pipeline {
 
                 slackSend(
                     channel: env.SLACK_CHANNEL,
-                    color: COLOR_MAP[currentBuild.currentResult]',
+                    color: buildStatus == 'SUCCESS' ? 'good' : 'danger',
                     message: """
                     *Job:* ${jobName} #${buildNumber}
                     *Status:* ${buildStatus}
