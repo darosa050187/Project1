@@ -13,7 +13,7 @@ pipeline {
 	tools {
         maven "MAVEN3.9"
         jdk "JDK17"
-        scannerHome = tool 'sonar6.2'
+        scannerHome = 'sonar6.2'
     }
     stages{
         stage('BUILD') {
@@ -87,7 +87,27 @@ pipeline {
                 )
             }
         }
+    }
+    post {
+        always {
+            script {
+                def jobName = env.JOB_NAME
+                def buildNumber = env.BUILD_NUMBER
+                def buildStatus = currentBuild.currentResult // SUCCESS, FAILURE, UNSTABLE, etc.
+                def testResults = "Tests completed: SUCCESS" // Modify based on actual test results
 
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: buildStatus == 'SUCCESS' ? 'good' : 'danger',
+                    message: """
+                    *Job:* ${jobName} #${buildNumber}
+                    *Status:* ${buildStatus}
+                    *Test Results:* ${testResults}
+                    *Nexus Repository:* <${env.NEXUS_REPO_URL}|View Artifact>
+                    """
+                )
+            }
+        }
     }
 }
             // echo 'Slack Notifications.'
