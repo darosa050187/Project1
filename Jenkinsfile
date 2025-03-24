@@ -51,16 +51,7 @@ pipeline {
                    -Dsonar.jacoco.reportsPath=target/jacoco.exec \
                    -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
                 }
-                post {
-                    success {
-                        echo "Code Analysis Passed successfully!"
-                    }
-                    failure {
-                        echo "Check with DevOps team the job code analysis failed"
-                        echo "Check sonarqube connection again"
-                        echo "Check sonarqube connection one more time"
-                    }
-                }
+                
             }
         }
 
