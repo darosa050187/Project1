@@ -106,6 +106,7 @@ pipeline {
                     *Test Results:* ${testResults}
                     *Nexus Repository:* <${env.NEXUS_REPO_URL}|View Artifact>
                     """
+                )
             }
             // echo 'Slack Notifications.'
             // slackSend channel: '${}',
