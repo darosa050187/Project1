@@ -13,7 +13,6 @@ pipeline {
 	tools {
         maven "MAVEN3.9"
         jdk "JDK17"
-        scannerHome = 'sonar6.2'
     }
     stages{
         stage('BUILD') {
@@ -48,6 +47,9 @@ pipeline {
             }
         }
         stage('CODE ANALYSIS with SONARQUBE') {
+            environment {
+                scannerHome = tool 'sonar6.2'
+            }
             steps {
                 withSonarQubeEnv('Jenkins2Sonar'){
                 sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
