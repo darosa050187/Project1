@@ -97,10 +97,9 @@ pipeline {
         }
         stage('Copy Artifact to AWS S3 Bucket') {
             steps {
+                def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
+                echo "Downloading artifact from Nexus: ${artifactUrl}"
                 withAWS(credentials: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20', region: "{AWS_REGION}") {
-                    def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
-                    echo "Downloading artifact from Nexus: ${artifactUrl}"
-
                     sh """
                     wget -O ${env.ARTIFACT_NAME} ${artifactUrl}
                     aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/
@@ -110,8 +109,8 @@ pipeline {
         }
         stage('Deploy to AWS Elastic Beanstalk') {
             steps {
+                echo "Deploying artifact to AWS Elastic Beanstalk..."
                 withAWS(credentials: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20', region: "{AWS_REGION}") {
-                    echo "Deploying artifact to AWS Elastic Beanstalk..."
                     sh """
                     aws elasticbeanstalk create-application-version --application-name ${env.AWS_BEANSTALK_APP} --version-label build-${env.BUILD_NUMBER} --source-bundle S3Bucket=${env.AWS_S3_BUCKET},S3Key=${env.ARTIFACT_NAME} --region ${env.AWS_REGION}
                     aws elasticbeanstalk update-environment --application-name ${env.AWS_BEANSTALK_APP} --environment-name ${env.AWS_BEANSTALK_ENV} --version-label build-${env.BUILD_NUMBER} --region ${env.AWS_REGION}
