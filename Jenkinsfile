@@ -58,6 +58,7 @@ pipeline {
                     failure {
                         echo "Check with DevOps team the job code analysis failed"
                         echo "Check sonarqube connection again"
+                        echo "Check sonarqube connection one more time"
                     }
                 }
             }
