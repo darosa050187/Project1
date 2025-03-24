@@ -98,12 +98,15 @@ pipeline {
         stage('Copy Artifact to AWS S3 Bucket') {
             steps {
                 script {
-                    def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
-                    echo "Downloading artifact from Nexus: ${artifactUrl}"
-                    withCredentials(
-                        [[$class: 'AmazonWebServicesCredentialsBinding', 
-                        credentialsId: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20']]
-                    ) { sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}" }
+                    witAWS(role:arn:aws:iam::084828572941:role/AWS_Beanstalk_Admin_Role, roleSessionName: 'JenkinsSession', region: "{AWS_REGION}") {
+                        sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}"
+                    }
+                    // def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
+                    // echo "Downloading artifact from Nexus: ${artifactUrl}"
+                    // withCredentials(
+                    //     [[$class: 'AmazonWebServicesCredentialsBinding', 
+                    //     credentialsId: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20']]
+                    // ) { sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}" }
                 }
             }
         }
