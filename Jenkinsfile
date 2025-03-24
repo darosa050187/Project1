@@ -15,6 +15,7 @@ pipeline {
         AWS_BEANSTALK_APP = 'tf-test-name'
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
         AWS_REGION = 'us-east-1'  // Change to your AWS region
+        registryCredential = 'ecr:us-east-1:AWS_USER_CREDENTIALS'
     }
 	tools {
         maven "MAVEN3.9"
@@ -102,9 +103,7 @@ pipeline {
                     echo "Uploading artifact ${ARTIFACT_NAME} to AWS S3 Bucket ${AWS_S3_BUCKET}"
                     withCredentials(
                         [[$class: 'AmazonWebServicesCredentialsBinding', 
-                        credentialsId: 'AWS_USER_CREDENTIALS',
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]
+                        credentialsId: 'AWS_USER_CREDENTIALS']]
                     ) { sh "aws s3 cp target/${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME} --region=${AWS_REGION}" }
                 }
             }
