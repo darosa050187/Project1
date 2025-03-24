@@ -55,6 +55,9 @@ pipeline {
                     success {
                         echo "Code Analysis Passed successfully!"
                     }
+                    failure {
+                        echo "Check with DevOps team the job code analysis failed"
+                    }
                 }
             }
         }
