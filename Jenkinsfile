@@ -98,7 +98,7 @@ pipeline {
         stage('Copy Artifact to AWS S3 Bucket') {
             steps {
                 script {
-                    witAWS(role:arn:aws:iam::084828572941:role/AWS_Beanstalk_Admin_Role, roleSessionName: 'JenkinsSession', region: "{AWS_REGION}") {
+                    witAWS(role: 'arn:aws:iam::084828572941:role/AWS_Beanstalk_Admin_Role', roleSessionName: 'JenkinsSession', region: "{AWS_REGION}") {
                         sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}"
                     }
                     // def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
