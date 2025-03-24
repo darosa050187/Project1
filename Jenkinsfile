@@ -5,9 +5,15 @@ def COLOR_MAP = [
 
 pipeline {
 	agent any
+    environment {
+        SLACK_CHANNEL = '#ci-pipelines-notifications'  // Change to your Slack channel
+        SLACK_CREDENTIALS_ID = 'slacktoken'  // Add your Slack token in Jenkins credentials
+        NEXUS_REPO_URL = 'http://13.218.32.114:8081'
+    }
 	tools {
         maven "MAVEN3.9"
         jdk "JDK17"
+        scannerHome = tool 'sonar6.2'
     }
     stages{
         stage('BUILD') {
@@ -42,9 +48,6 @@ pipeline {
             }
         }
         stage('CODE ANALYSIS with SONARQUBE') {
-            environment {
-                scannerHome = tool 'sonar6.2'
-            }
             steps {
                 withSonarQubeEnv('Jenkins2Sonar'){
                 sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
@@ -88,10 +91,26 @@ pipeline {
     }
     post {
         always {
-            echo 'Slack Notifications.'
-            slackSend channel: '#ci-pipelines-notifications',
-                color: COLOR_MAP[currentBuild.currentResult],
-                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+            script {
+                def jobName = env.JOB_NAME
+                def buildNumber = env.BUILD_NUMBER
+                def buildStatus = currentBuild.currentResult // SUCCESS, FAILURE, UNSTABLE, etc.
+                def testResults = "Tests completed: SUCCESS" // Modify based on actual test results
+
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: buildStatus == 'SUCCESS' ? 'good' : 'danger',
+                    message: """
+                    *Job:* ${jobName} #${buildNumber}
+                    *Status:* ${buildStatus}
+                    *Test Results:* ${testResults}
+                    *Nexus Repository:* <${env.NEXUS_REPO_URL}|View Artifact>
+                    """
+            }
+            // echo 'Slack Notifications.'
+            // slackSend channel: '${}',
+            //     color: COLOR_MAP[currentBuild.currentResult],
+            //     message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
         }
     }
 
