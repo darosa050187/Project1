@@ -105,7 +105,7 @@ pipeline {
                         credentialsId: 'AWS_USER_CREDENTIALS',
                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]
-                    ) { sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}" }
+                    ) { sh "aws s3 cp target/${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}" }
                 }
             }
         }
