@@ -97,13 +97,13 @@ pipeline {
         }
         stage('Copy Artifact to AWS S3 Bucket') {
             steps {
-                def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
-                echo "Downloading artifact from Nexus: ${artifactUrl}"
-                withAWS(credentials: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20', region: "{AWS_REGION}") {
-                    sh """
-                    wget -O ${env.ARTIFACT_NAME} ${artifactUrl}
-                    aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/
-                    """
+                script {
+                    def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
+                    echo "Downloading artifact from Nexus: ${artifactUrl}"
+                    sh "wget -O ${env.ARTIFACT_NAME} ${artifactUrl}"
+                    withAWS(credentials: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20', region: "{AWS_REGION}") {
+                    sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/"
+                }
                 }
             }
         }
