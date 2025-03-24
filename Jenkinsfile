@@ -98,28 +98,33 @@ pipeline {
         stage('Copy Artifact to AWS S3 Bucket') {
             steps {
                 script {
-                    witAWS(role: 'arn:aws:iam::084828572941:role/AWS_Beanstalk_Admin_Role', roleSessionName: 'JenkinsSession', region: "{AWS_REGION}") {
-                        sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}"
-                    }
                     // def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
-                    // echo "Downloading artifact from Nexus: ${artifactUrl}"
-                    // withCredentials(
-                    //     [[$class: 'AmazonWebServicesCredentialsBinding', 
-                    //     credentialsId: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20']]
-                    // ) { sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}" }
+                    echo "Uploading artifact ${ARTIFACT_NAME} to AWS S3 Bucket ${AWS_S3_BUCKET}"
+                    withCredentials(
+                        [[$class: 'AmazonWebServicesCredentialsBinding', 
+                        credentialsId: 'AWS_USER_CREDENTIALS',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]
+                    ) { sh "aws s3 cp ${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME}" }
                 }
             }
         }
-        stage('Deploy to AWS Elastic Beanstalk') {
+        stage("Deploy artifact ${ARTIFACT_NAME} to AWS Elastic Beanstalk") {
             steps {
-                echo "Deploying artifact to AWS Elastic Beanstalk..."
-                withAWS(credentials: '6dc5080f-6a4d-4e5d-88ee-ce8477629d20', region: "{AWS_REGION}") {
-                    sh """
-                    aws elasticbeanstalk create-application-version --application-name ${env.AWS_BEANSTALK_APP} --version-label build-${env.BUILD_NUMBER} --source-bundle S3Bucket=${env.AWS_S3_BUCKET},S3Key=${env.ARTIFACT_NAME} --region ${env.AWS_REGION}
-                    aws elasticbeanstalk update-environment --application-name ${env.AWS_BEANSTALK_APP} --environment-name ${env.AWS_BEANSTALK_ENV} --version-label build-${env.BUILD_NUMBER} --region ${env.AWS_REGION}
-                    """
-                }  
-            }
+                script {
+                    echo "Deploying ${ARTIFACT_NAME} artifact to AWS Elastic Beanstalk..."
+                    withCredentials(
+                        [[$class: 'AmazonWebServicesCredentialsBinding', 
+                        credentialsId: 'AWS_USER_CREDENTIALS',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']] ) {
+                            sh """
+                            aws elasticbeanstalk create-application-version --application-name ${env.AWS_BEANSTALK_APP} --version-label build-${env.BUILD_NUMBER} --source-bundle S3Bucket=${env.AWS_S3_BUCKET},S3Key=${env.ARTIFACT_NAME} --region ${env.AWS_REGION}
+                            aws elasticbeanstalk update-environment --application-name ${env.AWS_BEANSTALK_APP} --environment-name ${env.AWS_BEANSTALK_ENV} --version-label build-${env.BUILD_NUMBER} --region ${env.AWS_REGION}
+                            """ 
+                        }
+                }    
+            }  
         }
     }
     post {
