@@ -96,11 +96,11 @@ pipeline {
                 def jobName = env.JOB_NAME
                 def buildNumber = env.BUILD_NUMBER
                 def buildStatus = currentBuild.currentResult // SUCCESS, FAILURE, UNSTABLE, etc.
-                def testResults = "Tests completed: SUCCESS" // Modify based on actual test results
+                def testResults = "Tests completed: ${buildStatus}" // Modify based on actual test results
 
                 slackSend(
                     channel: env.SLACK_CHANNEL,
-                    color: buildStatus == 'SUCCESS' ? 'good' : 'danger',
+                    color: COLOR_MAP[currentBuild.currentResult]',
                     message: """
                     *Job:* ${jobName} #${buildNumber}
                     *Status:* ${buildStatus}
