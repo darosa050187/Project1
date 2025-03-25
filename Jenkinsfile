@@ -86,11 +86,6 @@ pipeline {
                 script {
                     dockerImage = docker.build( imageName + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
                 }
-                post {
-                    success {
-                        echo "App created successfully"
-                    }
-                }
             }
         }
         stage('Upload App Image to AWS ECR') {
