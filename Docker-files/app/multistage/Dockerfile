@@ -1,6 +1,6 @@
 FROM maven:3.9.9-eclipse-temurin-21-jammy AS BUILD_IMAGE
 RUN git clone https://github.com/darosa050187/Project1.git
-RUN cd vprofile-project && git checkout awscontainers && mvn install
+RUN cd Project1 && git checkout awscontainers && mvn install
 
 FROM tomcat:10-jdk21
 
