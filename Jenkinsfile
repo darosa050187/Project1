@@ -8,7 +8,7 @@ pipeline {
     environment {
         SLACK_CHANNEL = '#ci-pipelines-notifications'
         SLACK_CREDENTIALS_ID = 'slacktoken' 
-        NEXUS_REPO_URL = 'http://13.218.32.114:8081'
+        NEXUS_REPO_URL = 'http://172.31.20.42:8081'
         ARTIFACT_VERSION = 'v2'
         ARTIFACT_NAME = "vprofile-${ARTIFACT_VERSION}.war"  
         AWS_S3_BUCKET = 'awscicdartifacttest'  
@@ -16,10 +16,10 @@ pipeline {
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
         AWS_REGION = 'us-east-1'  
         registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
-        imageName = "Copy ECR instance ID"
-        vprofileRegistry = "https://Copy ECR instance ID URL"
-        cluster = "vprofile"
-        service = "vprofileappsvc"
+        imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-image"
+        vprofileRegistry = "https:084828572941.dkr.ecr.us-east-1.amazonaws.com"
+        cluster = "vprofile-app-ecs-cluster"
+        service = "my-ecs-service"
     }
 	tools {
         maven "MAVEN3.9"
@@ -103,7 +103,7 @@ pipeline {
                 }
             }
         }
-        stage {
+        stage('Deploy container to ECS')  {
             steps {
                 script {
                     withAWS(credentials: 'awscred', region: 'us-east-1'){
@@ -112,6 +112,15 @@ pipeline {
                 }
             }
         }
+        // stage('Deploy container to ECS') {
+        //     steps {
+        //         script {
+        //             withAWS() {
+        //                 sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new'
+        //             }
+        //         }
+        //     }
+        // }
         stage('Remove images from jenkins server') {
             steps {
                 script {
