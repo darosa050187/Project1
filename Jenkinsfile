@@ -6,16 +6,20 @@ def COLOR_MAP = [
 pipeline {
 	agent any
     environment {
-        SLACK_CHANNEL = '#ci-pipelines-notifications'  // Change to your Slack channel
-        SLACK_CREDENTIALS_ID = 'slacktoken'  // Add your Slack token in Jenkins credentials
+        SLACK_CHANNEL = '#ci-pipelines-notifications'
+        SLACK_CREDENTIALS_ID = 'slacktoken' 
         NEXUS_REPO_URL = 'http://13.218.32.114:8081'
         ARTIFACT_VERSION = 'v2'
-        ARTIFACT_NAME = "vprofile-${ARTIFACT_VERSION}.war"  // Change this to match your artifact
-        AWS_S3_BUCKET = 'awscicdartifacttest'  // S3 bucket for deployment
+        ARTIFACT_NAME = "vprofile-${ARTIFACT_VERSION}.war"  
+        AWS_S3_BUCKET = 'awscicdartifacttest'  
         AWS_BEANSTALK_APP = 'tf-test-name'
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
-        AWS_REGION = 'us-east-1'  // Change to your AWS region
-        registryCredential = 'ecr:us-east-1:AWS_USER_CREDENTIALS'
+        AWS_REGION = 'us-east-1'  
+        registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
+        imageName = "Copy ECR instance ID"
+        vprofileRegistry = "https://Copy ECR instance ID URL"
+        cluster = "vprofile"
+        service = "vprofileappsvc"
     }
 	tools {
         maven "MAVEN3.9"
@@ -35,7 +39,7 @@ pipeline {
         }
         stage('UNIT TEST') {
             steps {
-                            sh 'mvn test'
+                sh 'mvn test'
             }
         }
         stage('INTEGRATION TEST') {
@@ -70,60 +74,57 @@ pipeline {
                 }
             }
         }
-        stage("Quality Gate") {
+        stage('Quality Gate') {
             steps {
               timeout(time: 1, unit: 'HOURS') {
                 waitForQualityGate abortPipeline: true
               }
             }
         }
-        stage("UploadArtifact"){
-            steps{
-                nexusArtifactUploader(
-                  nexusVersion: 'nexus3',
-                  protocol: 'http',
-                  nexusUrl: '172.31.20.42:8081',
-                  groupId: 'QA',
-                  version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
-                  repository: 'vprofile-repo',
-                  credentialsId: 'nexuslogin',
-                  artifacts: [
-                    [artifactId: 'vproapp',
-                     classifier: '',
-                     file: "target/${ARTIFACT_NAME}",
-                     type: 'war']
-                  ]
-                )
-            }
-        }
-        stage('Copy Artifact to AWS S3 Bucket') {
+        stage('Build App Image using docker engine') {
             steps {
                 script {
-                    // def artifactUrl = "${env.NEXUS_REPO_URL}/${env.ARTIFACT_NAME}"
-                    echo "Uploading artifact ${ARTIFACT_NAME} to AWS S3 Bucket ${AWS_S3_BUCKET}"
-                    withCredentials(
-                        [[$class: 'AmazonWebServicesCredentialsBinding', 
-                        credentialsId: 'AWS_USER_CREDENTIALS']]
-                    ) { sh "aws s3 cp target/${env.ARTIFACT_NAME} s3://${env.AWS_S3_BUCKET}/${ARTIFACT_NAME} --region=${AWS_REGION}" }
+                    dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
+                }
+                post {
+                    success {
+                        echo "App created successfully"
+                    }
                 }
             }
         }
-        stage('Deploy artifact to AWS Elastic Beanstalk') {
+        stage('Upload App Image to AWS ECR') {
             steps {
                 script {
-                    echo "Deploying ${ARTIFACT_NAME} artifact to AWS Elastic Beanstalk..."
-                    withCredentials(
-                        [[$class: 'AmazonWebServicesCredentialsBinding', 
-                        credentialsId: 'AWS_USER_CREDENTIALS',
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']] ) {
-                            sh """
-                            aws elasticbeanstalk create-application-version --application-name ${env.AWS_BEANSTALK_APP} --version-label build-${env.BUILD_NUMBER} --source-bundle S3Bucket=${env.AWS_S3_BUCKET},S3Key=${env.ARTIFACT_NAME} --region ${env.AWS_REGION}
-                            aws elasticbeanstalk update-environment --application-name ${env.AWS_BEANSTALK_APP} --environment-name ${env.AWS_BEANSTALK_ENV} --version-label build-${env.BUILD_NUMBER} --region ${env.AWS_REGION}
-                            """ 
-                        }
-                }    
-            }  
+                    docker.withRegistry( vprofileRegistry, registryCredential ) {
+                    dockerImage.push("$BUILD_NUMBER")
+                    dockerImage.push('latest') 
+                    }
+                }
+            }
+        }
+        stage {
+            steps {
+                script {
+                    withAWS(credentials: 'awscred', region: 'us-east-1'){
+                        sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                    }
+                }
+            }
+        }
+        stage('Remove images from jenkins server') {
+            steps {
+                script {
+                    sh 'docker rmi -f $(docker images -a -q)'
+                }
+            }
+        }
+        stage('Remove git clone file from docker stage') {
+            steps {
+                script {
+                    sh 'rm -rf ./vprofile-project'
+                }
+            }
         }
     }
     post {
@@ -148,10 +149,7 @@ pipeline {
         }
     }
 }
-            // echo 'Slack Notifications.'
-            // slackSend channel: '${}',
-            //     color: COLOR_MAP[currentBuild.currentResult],
-            //     message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+
         
     
 
