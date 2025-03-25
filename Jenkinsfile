@@ -107,15 +107,6 @@ pipeline {
                 }
             }
         }
-        // stage('Deploy container to ECS') {
-        //     steps {
-        //         script {
-        //             withAWS() {
-        //                 sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new'
-        //             }
-        //         }
-        //     }
-        // }
         stage('Remove images from jenkins server') {
             steps {
                 script {
