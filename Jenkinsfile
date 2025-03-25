@@ -19,7 +19,7 @@ pipeline {
         imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-image"
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
-        service = "my-ecs-service"
+        service = "vprofile-app-ecs-service"
     }
 	tools {
         maven "MAVEN3.9"
