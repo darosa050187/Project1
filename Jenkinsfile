@@ -15,7 +15,7 @@ pipeline {
         AWS_BEANSTALK_APP = 'tf-test-name'
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
         AWS_REGION = 'us-east-1'  
-        registryCredential = 'ecr:us-east-1:AWS_USER_CREDENTIALS'
+        registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
         imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-image"
         vprofileRegistry = "https:084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
@@ -94,7 +94,7 @@ pipeline {
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
                     dockerImage.push("$BUILD_NUMBER")
                     dockerImage.push('latest') 
-                    
+
                     }
                 }
             }
@@ -102,7 +102,7 @@ pipeline {
         stage('Deploy container to ECS')  {
             steps {
                 script {
-                    withAWS(credentials: 'AWS_USER_CREDENTIALS', region: 'us-east-1'){
+                    withAWS(credentials: 'JENKINS_DOCKER_ACCESS', region: 'us-east-1'){
                         sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
                     }
                 }
