@@ -16,12 +16,13 @@ pipeline {
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
         AWS_REGION = 'us-east-1'  
         registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
-        imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vproapp-task-name"
+        ECR_REPO = "084828572941.dkr.ecr.us-east-1.amazonaws.com"
         imageNameURI = "vproapp-task-name"
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
-        CONTAINER_IMAGE_TAG = "latest"
+        IMAGE_TAG = "latest"
+        COMPOSE_FILE = "compose.yaml"
 
     }
 	tools {
@@ -87,17 +88,25 @@ pipeline {
         stage('Build App Image using docker engine') {
             steps {
                 script {
-                    dockerImage = docker.build( imageName + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
+                    sh "docker-compose -f $COMPOSE_FILE build"
+                    sh "docker tag vprofile-business-register-app-image $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
+                    sh "docker tag vprofile-business-register-web-image $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
+                    sh "docker tag vprofile-business-register-db-image $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
+                    sh "docker tag vprofile-business-register-mc-image $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
+                    sh "docker tag vprofile-business-register-ng-image $ECR_REPO/vprofile-business-register-ng-image:$IMAGE_TAG"
                 }
             }
         }
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
-                    echo "$BUILD_NUMBER"
-                    docker.withRegistry( vprofileRegistry, registryCredential ) {
-                    dockerImage.push("$BUILD_NUMBER")
-                    dockerImage.push('latest')
+                    withAWS(credentials: 'JENKINS_DOCKER_ACCESS', region: 'us-east-1'){
+                        sh "docker push $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
+                        sh "docker push $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
+                        sh "docker push $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
+                        sh "docker push $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
+                        sh "docker push $ECR_REPO/vprofile-business-register-ng-image:$IMAGE_TAG"
+                        }   
                     }
                 }
             }
