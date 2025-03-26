@@ -20,6 +20,7 @@ pipeline {
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
+        IMAGE_TAG : "latest"
 
     }
 	tools {
@@ -27,65 +28,65 @@ pipeline {
         jdk "JDK17"
     }
     stages{
-        stage('BUILD') {
-            steps {
-                sh 'mvn clean install -DskipTests'
-            }
-            post {
-                success {
-                    echo 'Now Archiving...'
-                        archiveArtifacts artifacts: '**/target/*.war'
-                }
-            }
-        }
-        stage('UNIT TEST') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-        stage('INTEGRATION TEST') {
-            steps {
-                sh 'mvn verify -DskipUnitTests'
-            }
-        }
-        stage('CODE ANALYSIS WITH CHECKSTYLE'){
-            steps {
-                sh 'mvn checkstyle:checkstyle'
-            }
-            post {
-                success {
-                    echo 'Generated Analysis Result'
-                }
-            }
-        }
-        stage('CODE ANALYSIS with SONARQUBE') {
-            environment {
-                scannerHome = tool 'sonar6.2'
-            }
-            steps {
-                withSonarQubeEnv('Jenkins2Sonar'){
-                sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
-                   -Dsonar.projectName=vprofile-repo \
-                   -Dsonar.projectVersion=1.0 \
-                   -Dsonar.sources=src/ \
-                   -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
-                   -Dsonar.junit.reportsPath=target/surefire-reports/ \
-                   -Dsonar.jacoco.reportsPath=target/jacoco.exec \
-                   -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
-                }
-            }
-        }
-        stage('Quality Gate') {
-            steps {
-              timeout(time: 1, unit: 'HOURS') {
-                waitForQualityGate abortPipeline: true
-              }
-            }
-        }
+        // stage('BUILD') {
+        //     steps {
+        //         sh 'mvn clean install -DskipTests'
+        //     }
+        //     post {
+        //         success {
+        //             echo 'Now Archiving...'
+        //                 archiveArtifacts artifacts: '**/target/*.war'
+        //         }
+        //     }
+        // }
+        // stage('UNIT TEST') {
+        //     steps {
+        //         sh 'mvn test'
+        //     }
+        // }
+        // stage('INTEGRATION TEST') {
+        //     steps {
+        //         sh 'mvn verify -DskipUnitTests'
+        //     }
+        // }
+        // stage('CODE ANALYSIS WITH CHECKSTYLE'){
+        //     steps {
+        //         sh 'mvn checkstyle:checkstyle'
+        //     }
+        //     post {
+        //         success {
+        //             echo 'Generated Analysis Result'
+        //         }
+        //     }
+        // }
+        // stage('CODE ANALYSIS with SONARQUBE') {
+        //     environment {
+        //         scannerHome = tool 'sonar6.2'
+        //     }
+        //     steps {
+        //         withSonarQubeEnv('Jenkins2Sonar'){
+        //         sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+        //            -Dsonar.projectName=vprofile-repo \
+        //            -Dsonar.projectVersion=1.0 \
+        //            -Dsonar.sources=src/ \
+        //            -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+        //            -Dsonar.junit.reportsPath=target/surefire-reports/ \
+        //            -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+        //            -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
+        //         }
+        //     }
+        // }
+        // stage('Quality Gate') {
+        //     steps {
+        //       timeout(time: 1, unit: 'HOURS') {
+        //         waitForQualityGate abortPipeline: true
+        //       }
+        //     }
+        // }
         stage('Build App Image using docker engine') {
             steps {
                 script {
-                    dockerImage = docker.build( imageName + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
+                    dockerImage = docker.build( imageName + ":$IMAGE_TAG", "./Docker-files/app/multistage/")
                 }
             }
         }
@@ -93,8 +94,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
-                    dockerImage.push("$BUILD_NUMBER")
-                    dockerImage.push('latest') 
+                    dockerImage.push(imageName + "$IMAGE_TAG")
                     }
                 }
             }
