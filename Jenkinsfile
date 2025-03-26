@@ -16,7 +16,8 @@ pipeline {
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
         AWS_REGION = 'us-east-1'  
         registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
-        imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-image:"
+        imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-image"
+        iamgeNameURI = "vprofile-app-image"
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
@@ -86,7 +87,7 @@ pipeline {
         stage('Build App Image using docker engine') {
             steps {
                 script {
-                    dockerImage = docker.build( imageName + "$CONTAINER_IMAGE_TAG", "./Docker-files/app/multistage/")
+                    dockerImage = docker.build( imageNameURI + "$CONTAINER_IMAGE_TAG", "./Docker-files/app/multistage/")
                 }
             }
         }
@@ -94,7 +95,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
-                    dockerImage.push(imageName + "$CONTAINER_IMAGE_TAG")
+                    dockerImage.push(imageNameURI + "$CONTAINER_IMAGE_TAG")
                     }
                 }
             }
@@ -108,20 +109,20 @@ pipeline {
                 }
             }
         }
-        stage('Remove images from jenkins server') {
-            steps {
-                script {
-                    sh 'docker rmi -f $(docker images -a -q)'
-                }
-            }
-        }
-        stage('Remove git clone file from docker stage') {
-            steps {
-                script {
-                    sh 'rm -rf ./vprofile-project'
-                }
-            }
-        }
+        // stage('Remove images from jenkins server') {
+        //     steps {
+        //         script {
+        //             sh 'docker rmi -f $(docker images -a -q)'
+        //         }
+        //     }
+        // }
+        // stage('Remove git clone file from docker stage') {
+        //     steps {
+        //         script {
+        //             sh 'rm -rf ./vprofile-project'
+        //         }
+        //     }
+        // }
     }
     post {
         always {
