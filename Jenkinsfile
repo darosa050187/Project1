@@ -23,7 +23,6 @@ pipeline {
         service = "vprofile-app-ecs-service"
         IMAGE_TAG = "latest"
         COMPOSE_FILE = "compose.yaml"
-
     }
 	tools {
         maven "MAVEN3.9"
@@ -109,7 +108,6 @@ pipeline {
                         }   
                     }
                 }
-            }
         }
         stage('Deploy container to ECS')  {
             steps {
