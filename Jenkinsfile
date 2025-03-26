@@ -94,8 +94,9 @@ pipeline {
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
+                    echo "$BUILD_NUMBER"
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
-                    dockerImage.push("$imageName")
+                    dockerImage.push("$BUILD_NUMBER")
                     dockerImage.push('latest')
                     }
                 }
