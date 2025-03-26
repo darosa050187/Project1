@@ -111,6 +111,7 @@ pipeline {
                 }
             }
         }
+        
         // stage('Remove images from jenkins server') {
         //     steps {
         //         script {
