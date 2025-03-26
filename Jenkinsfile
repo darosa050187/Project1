@@ -96,7 +96,7 @@ pipeline {
                 script {
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
                     dockerImage.push("$imageName")
-                    dockerImage.push("$CONTAINER_IMAGE_TAG")
+                    dockerImage.push('latest')
                     }
                 }
             }
