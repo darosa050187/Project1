@@ -17,7 +17,7 @@ pipeline {
         AWS_REGION = 'us-east-1'  
         registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
         imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-image"
-        iamgeNameURI = "vprofile-app-image"
+        iamgeNameURI = "vprofile-app-image:"
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
@@ -87,7 +87,7 @@ pipeline {
         stage('Build App Image using docker engine') {
             steps {
                 script {
-                    dockerImage = docker.build( imageNameURI + "$CONTAINER_IMAGE_TAG", "./Docker-files/app/multistage/")
+                    dockerImage = docker.build( "$imageNameURI" + "$CONTAINER_IMAGE_TAG", "./Docker-files/app/multistage/")
                 }
             }
         }
@@ -95,7 +95,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
-                    dockerImage.push(imageNameURI + "$CONTAINER_IMAGE_TAG")
+                    dockerImage.push("$imageNameURI" + "$CONTAINER_IMAGE_TAG")
                     }
                 }
             }
