@@ -8,7 +8,7 @@ pipeline {
     environment {
         SLACK_CHANNEL = '#ci-pipelines-notifications'
         SLACK_CREDENTIALS_ID = 'slacktoken' 
-        NEXUS_REPO_URL = 'http://172.31.20.42:8081'
+        NEXUS_REPO_URL = 'http://190.31.20.42:8081'
         ARTIFACT_VERSION = 'v2'
         ARTIFACT_NAME = "vprofile-${ARTIFACT_VERSION}.war"  
         AWS_S3_BUCKET = 'awscicdartifacttest'  
