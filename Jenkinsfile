@@ -95,7 +95,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
-                    dockerImage.push("$imageNameURI" + "$CONTAINER_IMAGE_TAG")
+                    dockerImage.push("$imageNameURI")
+                    dockerImage.push("$CONTAINER_IMAGE_TAG")
                     }
                 }
             }
