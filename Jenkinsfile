@@ -17,7 +17,7 @@ pipeline {
         AWS_REGION = 'us-east-1'  
         registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
         imageName = "084828572941.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-image"
-        iamgeNameURI = "vprofile-app-image:"
+        imageNameURI = "vprofile-app-image:"
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
