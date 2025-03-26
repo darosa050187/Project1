@@ -20,7 +20,7 @@ pipeline {
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
-        CONTAINER_IMAGE_TAG : "latest"
+        CONTAINER_IMAGE_TAG = "latest"
 
     }
 	tools {
