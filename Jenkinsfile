@@ -171,8 +171,24 @@ pipeline {
                     docker.withRegistry (vprofileRegistry, registryCredential) {
                         images.each { imageName ->
                             try {
-                                def fullImangeName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
-                                docker.image(imageName).push(fullImageName)
+                                def imageExists = sh(
+                                script: "docker images -q ${ECR_REPO}/${imageName}:${IMAGE_TAG}",
+                                returnStdout: true
+                            ).trim()
+                            
+                            if (!imageExists) {
+                                error "Image ${imageName} not found locally"
+                            }
+                            def fullImageName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
+                            sh "docker push ${fullImageName}"
+                            echo "Successfully pushed ${fullImageName}"
+                            sh """
+                                aws ecr describe-images \
+                                    --repository-name ${imageName} \
+                                    --image-ids imageTag=${IMAGE_TAG}
+                            """
+                               // def fullImageName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
+                               //docker.image(imageName).push(fullImageName)
                             } catch (Exception e) {
                                 error "Failed to push ${image_Name}: ${e.message}"
                             }
