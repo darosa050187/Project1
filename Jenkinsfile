@@ -49,7 +49,7 @@ pipeline {
         stage('Validate Jenkins Environment') {
             steps {
                 script {
-                    REQUIRED_TOOL.each { tool ->
+                    REQUIRED_TOOLS.each { tool ->
                         def exitCode = sh(script: "wich ${tool}", returnStatus: true)
                         if (exit != 0) {
                             error "Required tool '${tool}' is not installed"
