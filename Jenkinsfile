@@ -22,7 +22,7 @@ pipeline {
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
         IMAGE_TAG = "latest"
-        COMPOSE_FILE = "docker-compose.yaml"
+        COMPOSE_FILE = "compose.yaml"
     }
 	tools {
         maven "MAVEN3.9"
