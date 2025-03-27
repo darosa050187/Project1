@@ -173,14 +173,18 @@ pipeline {
                             try {
                                 try {
                                     withAWS(credentials: 'AWS', region: 'us-east-1') {
-                                        sh 'docker images -q ${ECR_REPO}/${imageName}:${IMAGE_TAG}'
+                                        sh '''
+                                        docker images -q ${ECR_REPO}/${imageName}:${IMAGE_TAG}
+                                        '''
                                     }
                                 } catch (Exception ImageNF) {
                                     error "Image ${imageName} Not FOUND locally"
                                 }           
                                 try {
                                     withAWS(credentials: 'AWS', region: 'us-east-1') {
-                                        sh 'docker push ${ECR_REPO}/${imageName}:${IMAGE_TAG}'
+                                        sh '''
+                                        docker push ${ECR_REPO}/${imageName}:${IMAGE_TAG}
+                                        '''
                                     }
                                 } catch (Exception PushFail) {
                                     error "Image ${imageName} Push failed"
