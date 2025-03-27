@@ -136,11 +136,11 @@ pipeline {
                 script {
                     try {
                         withAWS(credentials: 'AWS', region: 'us-east-1') {
-                            aws ecs describe-services \
+                            sh '''aws ecs describe-services \
                                 --cluster ${cluster} \
                                 --services ${service} \
                                 --query 'services[0].deployments[0].rolloutState' \
-                                --output text
+                                --output text '''
                         }
                     } catch (Exception e) {
                         error "Deployment health check failed: ${e.message}"
