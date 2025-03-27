@@ -49,12 +49,17 @@ pipeline {
         stage('Validate Jenkins Environment') {
             steps {
                 script {
-                    REQUIRED_TOOLS.each { tool ->
+                    def tools = REQUIRED_TOOLS.split(',').collect { it.trim() }
+                    echo "Checking for required tools: ${tools.join(', ')}"
+
+                    tools.each { tool ->
                         def exitCode = sh(script: "wich ${tool}", returnStatus: true)
                         if (exit != 0) {
                             error "Required tool '${tool}' is not installed"
                         }
+                        echo "${tool} found successfully"
                     }
+                    echo "All required tools are available"
                 }
             }
         }
