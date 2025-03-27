@@ -205,13 +205,13 @@ pipeline {
     }
     post {
         always {
-            success {
+            if (currentBuild.result == 'SUCCESS') {
                 notifySlack('SUCCESS')
             }
-            failure {
+            else if (currentBuild.result == 'FAILURE') {
                 notifySlack('FAILURE')
             }
-            unstable {
+            else if (currentBuild.result == 'UNSTABLE') {
                 notifySlack('UNSTABLE')
             }
         }
