@@ -170,7 +170,6 @@ pipeline {
                     ]
                     docker.withRegistry (vprofileRegistry, registryCredential) {
                         images.each { imageName ->
-                        def fullImageName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
                             try {
                                 try {
                                     withAWS(credentials: 'AWS', region: 'us-east-1') {
@@ -181,7 +180,7 @@ pipeline {
                                 }           
                                 try {
                                     withAWS(credentials: 'AWS', region: 'us-east-1') {
-                                        sh 'docker push ${fullImageName}'
+                                        sh 'docker push ${ECR_REPO}/${imageName}:${IMAGE_TAG}'
                                     }
                                 } catch (Exception PushFail) {
                                     error "Image ${imageName} Push failed"
