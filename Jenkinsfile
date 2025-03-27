@@ -170,6 +170,7 @@ pipeline {
                     ]
                     docker.withRegistry (vprofileRegistry, registryCredential) {
                         images.each { imageName ->
+                        def fullImageName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
                             try {
                                 try {
                                     withAWS(credentials: 'AWS', region: 'us-east-1') {
