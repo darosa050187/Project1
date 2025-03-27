@@ -29,7 +29,7 @@ pipeline {
         AWS_BEANSTALK_APP = 'tf-test-name'
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
         AWS_REGION = 'us-east-1'  
-        registryCredential = 'ecr:us-east-1:AWS-ECR-USER'
+        registryCredential = 'ecr:us-east-1:AWS'
         ECR_REPO = "084828572941.dkr.ecr.us-east-1.amazonaws.com"
         imageNameURI = "vproapp-task-name"
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
