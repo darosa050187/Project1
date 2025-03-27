@@ -39,7 +39,7 @@ pipeline {
         COMPOSE_FILE = "compose.yaml"
         AWS_ACCOUNT_ID = "084828572941"
         AWS_DEFAULT_REGION = "us-east-1"
-        REQUIRED_TOOLS = "docker, aws, maven"
+        REQUIRED_TOOLS = "docker, aws, java"
     }
 //    tools {
 //        maven "MAVEN3.9"
