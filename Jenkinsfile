@@ -86,6 +86,23 @@ pipeline {
         //       }
         //     }
         // }
+        stage('Environment Health Check') {
+            steps {
+                script {
+                    try {
+                        sh """
+                            aws ecs describe-services \
+                                --cluster ${cluster} \
+                                --services ${service} \
+                                --query 'services[0].deployments[0].rolloutState' \
+                                --output text
+                        """
+                    } catch (Exception e) {
+                        error "Deployment health check failed: ${e.message}"
+                    }
+                }
+            }
+        }
         stage('Build App Image using docker engine') {
             steps {
                 script {
@@ -94,7 +111,7 @@ pipeline {
                     sh "docker tag vprofile-business-register-web-image $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
                     sh "docker tag vprofile-business-register-db-image $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
                     sh "docker tag vprofile-business-register-mc-image $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
-                }
+                } 
             }
         }
         stage('login to AWS ECR'){
@@ -137,7 +154,12 @@ pipeline {
         stage('Remove images from jenkins server') {
             steps {
                 script {
-                   sh 'docker rmi -f $(docker images -a -q)'
+                    try {
+                        sh 'docker system -af --volumes'
+                        sh 'docker rmi -f $(docker images -a -q) || true'
+                    } catch (Exception e) {
+                        echo "Warning: Failed to clean up Docker images: ${e.message}"
+                    }
                 }
             }
         }
