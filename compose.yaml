@@ -11,11 +11,15 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=vprodbpass
   vprocache01:
+    build:
+      context: ./Docker-files/mc
     image: vprofile-business-register-mc-image
     container_name: vprocache01
     ports:
       - "11211:11211"
   vpromq01:
+    build:
+      context: ./Docker-files/mq
     image: vprofile-business-register-mq-image
     ports:
       - "5672:5672"
