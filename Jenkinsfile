@@ -1,7 +1,21 @@
-def COLOR_MAP = [
-    'SUCCESS': 'good', 
-    'FAILURE': 'danger',
-]
+//def COLOR_MAP = [
+//    'SUCCESS': 'good', 
+//    'FAILURE': 'danger',
+//]
+def notifySlack(String buildStatus) {
+    def colorCode = buildStatus == 'SUCCESS' ? '#36a64f' : '#ff0000'
+    def summary = "*Job:* ${env.JOB_NAME} #${env.BUILD_NUMBER}\n" +
+                 "*Status:* ${buildStatus}\n" +
+                 "*Duration:* ${currentBuild.durationString}\n" +
+                 "*Details:* ${env.BUILD_URL}"
+
+    slackSend(
+        channel: env.SLACK_CHANNEL,
+        color: colorCode,
+        message: summary,
+        tokenCredentialId: env.SLACK_CREDENTIALS_ID
+    )
+}
 
 pipeline {
 	agent any
@@ -25,12 +39,29 @@ pipeline {
         COMPOSE_FILE = "compose.yaml"
         AWS_ACCOUNT_ID = "084828572941"
         AWS_DEFAULT_REGION = "us-east-1"
+        REQUIRED_TOOLS = [
+            'docker'.
+            'aws',
+            'maven'
+        ]
     }
-	tools {
-        maven "MAVEN3.9"
-        jdk "JDK17"
-    }
+//    tools {
+//        maven "MAVEN3.9"
+//        jdk "JDK17"
+//    }
     stages{
+        stage('Validate Jenkins Environment') {
+            steps {
+                script {
+                    REQUIRED_TOOL.each { tool ->
+                        def exitCode = sh(script: "wich ${tool}", return Status: true)
+                        if (exit != 0) {
+                            error "Required tool '${tool}' is not installed"
+                        }
+                    }
+                }
+            }
+        }
         // stage('BUILD') {
         //     steps {
         //         sh 'mvn clean install -DskipTests'
@@ -86,6 +117,13 @@ pipeline {
         //       }
         //     }
         // }
+        stage('login to AWS ECR'){
+            steps {
+                script {
+                    sh "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO"
+                }
+            }
+        }
         stage('Environment Health Check') {
             steps {
                 script {
@@ -114,32 +152,27 @@ pipeline {
                 } 
             }
         }
-        stage('login to AWS ECR'){
-            steps {
-                script {
-                    sh "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username jenkins --password-stdin $ECR_REPO"
-                }
-            }
-        }
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
-//                    withAWS(credentials: 'AWS-ECR-USER', region: 'us-east-1'){
-//                        sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username jenkins --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
-//                        sh "docker push $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
-//                        sh "docker push $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
-//                        sh "docker push $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
-//                        sh "docker push $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
+                    def images = [
+                        'vprofile-business-register-app-image',
+                        'vprofile-business-register-web-image',
+                        'vprofile-business-register-db-image',
+                        'vprofile-business-register-mc-image'
+                    ]
                     docker.withRegistry (vprofileRegistry, registryCredential) {
-                        dockerImage.push("$ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG")
-                        dockerImage.push("$ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG")
-                        dockerImage.push("$ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG")
-                        dockerImage.push("$ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG")
-                    }
-
-//                    }   
+                        images.each { imageName ->
+                            try {
+                                def fullImangeName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
+                                docker.image(imageName).push(fullImageName)
+                            } catch (Exception e) {
+                                error "Failed to push ${image_Name}: ${e.message}"
+                            }
+                        }
                     }
                 }
+            }
         }
         stage('Deploy container to ECS')  {
             steps {
@@ -150,45 +183,40 @@ pipeline {
                 }
             }
         }
-
-        stage('Remove images from jenkins server') {
-            steps {
-                script {
-                    try {
-                        sh 'docker system -af --volumes'
-                        sh 'docker rmi -f $(docker images -a -q) || true'
-                    } catch (Exception e) {
-                        echo "Warning: Failed to clean up Docker images: ${e.message}"
+        stage('Clean up Processes') {
+            parallel {
+                stage('Remove images from jenkins server') {
+                    steps {
+                        script {
+                            try {
+                                sh 'docker system -af --volumes'
+                                sh 'docker rmi -f $(docker images -a -q) || true'
+                            } catch (Exception e) {
+                                echo "Warning: Failed to clean up Docker images: ${e.message}"
+                            }
+                        }
+                    }
+                }
+                stage('Remove git clone file from docker stage') {
+                    steps {
+                        script {
+                            sh 'rm -rf ./vprofile-project'
+                        }
                     }
                 }
             }
         }
-        // stage('Remove git clone file from docker stage') {
-        //     steps {
-        //         script {
-        //             sh 'rm -rf ./vprofile-project'
-        //         }
-        //     }
-        // }
     }
     post {
         always {
-            script {
-                def jobName = env.JOB_NAME
-                def buildNumber = env.BUILD_NUMBER
-                def buildStatus = currentBuild.currentResult // SUCCESS, FAILURE, UNSTABLE, etc.
-                def testResults = "Tests completed: ${buildStatus}" // Modify based on actual test results
-
-                slackSend(
-                    channel: env.SLACK_CHANNEL,
-                    color: buildStatus == 'SUCCESS' ? 'good' : 'danger',
-                    message: """
-                    *Job:* ${jobName} #${buildNumber}
-                    *Status:* ${buildStatus}
-                    *Test Results:* ${testResults}
-                    *Nexus Repository:* <${env.NEXUS_REPO_URL}|View Artifact>
-                    """
-                )
+            success {
+                notifySlack('SUCCESS')
+            }
+            failure {
+                notifySlack('FAILURE')
+            }
+            unstable {
+                notifySlack('UNSTABLE')
             }
         }
     }
