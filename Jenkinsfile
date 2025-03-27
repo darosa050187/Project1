@@ -23,6 +23,8 @@ pipeline {
         service = "vprofile-app-ecs-service"
         IMAGE_TAG = "latest"
         COMPOSE_FILE = "compose.yaml"
+        AWS_ACCOUNT_ID = "084828572941"
+        AWS_DEFAULT_REGION = "us-east-1"
     }
 	tools {
         maven "MAVEN3.9"
@@ -98,13 +100,14 @@ pipeline {
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
-                    withAWS(credentials: 'JENKINS_DOCKER_ACCESS', region: 'us-east-1'){
+//                    withAWS(credentials: 'JENKINS_DOCKER_ACCESS', region: 'us-east-1'){
+                        aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
                         sh "docker push $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
                         sh "docker push $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
                         sh "docker push $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
                         sh "docker push $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
                         }   
-                    }
+//                    }
                 }
         }
         stage('Deploy container to ECS')  {
