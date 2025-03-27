@@ -100,20 +100,20 @@ pipeline {
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
-//                    withAWS(credentials: 'JENKINS_DOCKER_ACCESS', region: 'us-east-1'){
-                        sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+//                    withAWS(credentials: 'ITADMIN_AWS_CREDENTIALS', region: 'us-east-1'){
+                        sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username jenkins --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
                         sh "docker push $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
                         sh "docker push $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
                         sh "docker push $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
                         sh "docker push $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
-                        }   
-//                    }
+//                    }   
+                    }
                 }
         }
         stage('Deploy container to ECS')  {
             steps {
                 script {
-                    withAWS(credentials: 'JENKINS_DOCKER_ACCESS', region: 'us-east-1'){
+                    withAWS(credentials: 'AWS-ECR-USER', region: 'us-east-1'){
                         sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
                     }
                 }
