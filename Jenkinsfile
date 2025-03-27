@@ -15,7 +15,7 @@ pipeline {
         AWS_BEANSTALK_APP = 'tf-test-name'
         AWS_BEANSTALK_ENV = 'vprofile-beanstalk-conf'
         AWS_REGION = 'us-east-1'  
-        registryCredential = 'ecr:us-east-1:JENKINS_DOCKER_ACCESS'
+        registryCredential = 'ecr:us-east-1:AWS-ECR-USER'
         ECR_REPO = "084828572941.dkr.ecr.us-east-1.amazonaws.com"
         imageNameURI = "vproapp-task-name"
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
@@ -100,12 +100,19 @@ pipeline {
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
-//                    withAWS(credentials: 'ITADMIN_AWS_CREDENTIALS', region: 'us-east-1'){
-                        sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username jenkins --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
-                        sh "docker push $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
-                        sh "docker push $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
-                        sh "docker push $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
-                        sh "docker push $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
+//                    withAWS(credentials: 'AWS-ECR-USER', region: 'us-east-1'){
+//                        sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username jenkins --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+//                        sh "docker push $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
+//                        sh "docker push $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
+//                        sh "docker push $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
+//                        sh "docker push $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
+                    docker.withRegistry (vprofileRegistry, registryCredential) {
+                        dockerImage.push("$ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG")
+                        dockerImage.push("$ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG")
+                        dockerImage.push("$ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG")
+                        dockerImage.push("$ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG")
+                    }
+
 //                    }   
                     }
                 }
