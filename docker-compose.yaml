@@ -5,7 +5,7 @@ services:
     image: vprocontainers/vprofiledb
     container_name: vprodb
     ports:
-      - ["3306:3306"]
+      - [3306:3306]
     volumes:
       - vprodbdata:/var/lib/mysql
     environment:
@@ -14,11 +14,11 @@ services:
     image: memcached
     container_name: vprocache01
     ports:
-      - ["11211:11211"]
+      - [11211:11211]
   vpromq01:
     image: rabbitmq
     ports:
-      - ["5672:5672"]
+      - [5672:5672]
     environment: 
       - RABBITMQ_DEFAULT_USER=guest
       - RABBIT_MQ_PASS=guest
@@ -28,7 +28,7 @@ services:
       image: vprocontainers/vprofileapp
       container_name: vproapp
       ports:
-        - ["8080:8080"]
+        - [8080:8080]
       volumes:
         - vproappdata:/usr/local/tomcat/webapps
   vproweb:
@@ -37,7 +37,7 @@ services:
       image: vprocontainers/vprofileweb
       container_name: vproweb
       ports:
-        - ["80:80"]
+        - [80:80]
 volumes:
   vprodbdata: {}
   vproappdata: {}
