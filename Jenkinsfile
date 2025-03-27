@@ -119,13 +119,13 @@ pipeline {
             }
         }
 
-        // stage('Remove images from jenkins server') {
-        //     steps {
-        //         script {
-        //             sh 'docker rmi -f $(docker images -a -q)'
-        //         }
-        //     }
-        // }
+        stage('Remove images from jenkins server') {
+            steps {
+                script {
+                   sh 'docker rmi -f $(docker images -a -q)'
+                }
+            }
+        }
         // stage('Remove git clone file from docker stage') {
         //     steps {
         //         script {

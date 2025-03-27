@@ -2,7 +2,7 @@ services:
   vprodb:
     build: 
       context: ./Docker-files/db
-    image: vprocontainers/vprofiledb
+    image: vprofile-business-register-db-image
     container_name: vprodb
     ports:
       - "3306:3306"
@@ -11,12 +11,12 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=vprodbpass
   vprocache01:
-    image: memcached
+    image: vprofile-business-register-mc-image
     container_name: vprocache01
     ports:
       - "11211:11211"
   vpromq01:
-    image: rabbitmq
+    image: vprofile-business-register-mq-image
     ports:
       - "5672:5672"
     environment: 
@@ -25,7 +25,7 @@ services:
   vproapp:
       build: 
         context: ./Docker-files/app
-      image: vprocontainers/vprofileapp
+      image: vprofile-business-register-app-image
       container_name: vproapp
       ports:
         - "8080:8080"
@@ -34,7 +34,7 @@ services:
   vproweb:
       build: 
         context: ./Docker-files/web
-      image: vprocontainers/vprofileweb
+      image: vprofile-business-register-web-image
       container_name: vproweb
       ports:
         - "80:80"
