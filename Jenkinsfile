@@ -171,22 +171,20 @@ pipeline {
                     docker.withRegistry (vprofileRegistry, registryCredential) {
                         images.each { imageName ->
                             try {
-                                def imageExists = sh(
-                                script: "docker images -q ${ECR_REPO}/${imageName}:${IMAGE_TAG}",
-                                returnStdout: true
-                            ).trim()
-                            
-                            if (!imageExists) {
-                                error "Image ${imageName} not found locally"
-                            }
-                            def fullImageName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
-                            sh "docker push ${fullImageName}"
-                            echo "Successfully pushed ${fullImageName}"
-                            sh """
-                                aws ecr describe-images \
-                                    --repository-name ${imageName} \
-                                    --image-ids imageTag=${IMAGE_TAG}
-                            """
+                                try {
+                                    withAWS(credentials: 'AWS', region: 'us-east-1') {
+                                        sh 'docker images -q ${ECR_REPO}/${imageName}:${IMAGE_TAG}'
+                                    }
+                                } catch (Exception ImageNF) {
+                                    error "Image ${imageName} Not FOUND locally"
+                                }           
+                                try {
+                                    withAWS(credentials: 'AWS', region: 'us-east-1') {
+                                        sh 'docker push ${fullImageName}'
+                                    }
+                                } catch (Exception PushFail) {
+                                    error "Image ${imageName} Push failed"
+                                }
                                // def fullImageName = "${ECR_REPO}/${imageName}:${IMAGE_TAG}"
                                //docker.image(imageName).push(fullImageName)
                             } catch (Exception e) {
