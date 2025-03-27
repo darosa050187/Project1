@@ -27,7 +27,6 @@ pipeline {
 	tools {
         maven "MAVEN3.9"
         jdk "JDK17"
-        docker "docker_engine"
     }
     stages{
         // stage('BUILD') {
