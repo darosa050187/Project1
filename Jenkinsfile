@@ -135,13 +135,13 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh """
+                        withAWS(credentials: 'AWS', region: 'us-east-1') {
                             aws ecs describe-services \
                                 --cluster ${cluster} \
                                 --services ${service} \
                                 --query 'services[0].deployments[0].rolloutState' \
                                 --output text
-                        """
+                        }
                     } catch (Exception e) {
                         error "Deployment health check failed: ${e.message}"
                     }
@@ -184,7 +184,7 @@ pipeline {
         stage('Deploy container to ECS')  {
             steps {
                 script {
-                    withAWS(credentials: 'AWS-ECR-USER', region: 'us-east-1'){
+                    withAWS(credentials: 'AWS', region: 'us-east-1'){
                         sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
                     }
                 }
