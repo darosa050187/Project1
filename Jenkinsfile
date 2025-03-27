@@ -53,7 +53,8 @@ pipeline {
                     echo "Checking for required tools: ${tools.join(', ')}"
 
                     tools.each { tool ->
-                        def exitCode = sh(script: "wich ${tool}", returnStatus: true)
+                        echo "Checking for ${tool}..."
+                        def exitCode = sh(script: "which ${tool}", returnStatus: true)
                         if (exit != 0) {
                             error "Required tool '${tool}' is not installed"
                         }
