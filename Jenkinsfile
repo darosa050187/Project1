@@ -40,7 +40,7 @@ pipeline {
         AWS_ACCOUNT_ID = "084828572941"
         AWS_DEFAULT_REGION = "us-east-1"
         REQUIRED_TOOLS = [
-            'docker'.
+            'docker',
             'aws',
             'maven'
         ]
@@ -54,7 +54,7 @@ pipeline {
             steps {
                 script {
                     REQUIRED_TOOL.each { tool ->
-                        def exitCode = sh(script: "wich ${tool}", return Status: true)
+                        def exitCode = sh(script: "wich ${tool}", returnStatus: true)
                         if (exit != 0) {
                             error "Required tool '${tool}' is not installed"
                         }
