@@ -122,7 +122,12 @@ pipeline {
         stage('login to AWS ECR'){
             steps {
                 script {
-                    sh "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO"
+                    try {
+                        def ecrPassword = sh(script: "aws ecr get-login-password --region ${AWS_DEFAULT_REGION}", returnStdout: true).trim()
+                        sh "echo \${ecrPassword} | docker login --username AWS --password-stdin ${ECR_REPO}"
+                    } catch (Exception e) {
+                        error "Failed to login to ECR: ${e.message}"
+                    }
                 }
             }
         }
