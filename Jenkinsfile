@@ -97,6 +97,13 @@ pipeline {
                 }
             }
         }
+        stage('login to AWS ECR'){
+            steps {
+                script {
+                    sh "$(aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username jenkins --password-stdin $ECR_REPO)"
+                }
+            }
+        }
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
