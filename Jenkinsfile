@@ -17,6 +17,15 @@ def notifySlack(String buildStatus) {
     )
 }
 
+def images = [
+                        'vprofile-business-register-app-image',
+                        'vprofile-business-register-web-image',
+                        'vprofile-business-register-db-image',
+                        'vprofile-business-register-mc-image',
+                        'vprofile-business-register-ng-image'
+
+]
+
 pipeline {
 	agent any
     environment {
@@ -35,7 +44,7 @@ pipeline {
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
-        IMAGE_TAG = "1.0.0"
+        IMAGE_TAG = "1.0.1"
         COMPOSE_FILE = "compose.yaml"
         AWS_ACCOUNT_ID = "084828572941"
         AWS_DEFAULT_REGION = "us-east-1"
@@ -152,25 +161,23 @@ pipeline {
             steps {
                 script {
                     sh "docker-compose -f $COMPOSE_FILE build"
-                    sh "docker tag vprofile-business-register-app-image $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
-                    sh "docker tag vprofile-business-register-web-image $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
-                    sh "docker tag vprofile-business-register-db-image $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
-                    sh "docker tag vprofile-business-register-mc-image $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
-                    sh "docker tag vprofile-business-register-ng-image $ECR_REPO/vprofile-business-register-ng-image:$IMAGE_TAG"
+                    images.each { imageName ->
+                        // Tag with actual version
+                        sh "docker tag ${imageName} $ECR_REPO/${imageName}:${IMAGE_TAG}"
+                        // Tag with latest
+                        sh "docker tag ${imageName} $ECR_REPO/${imageName}:latest"
+                    }
+                    //sh "docker tag vprofile-business-register-app-image $ECR_REPO/vprofile-business-register-app-image:$IMAGE_TAG"
+                    //sh "docker tag vprofile-business-register-web-image $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
+                    //sh "docker tag vprofile-business-register-db-image $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
+                    //sh "docker tag vprofile-business-register-mc-image $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
+                    //sh "docker tag vprofile-business-register-ng-image $ECR_REPO/vprofile-business-register-ng-image:$IMAGE_TAG"
                 } 
             }
         }
         stage('Upload App Image to AWS ECR') {
             steps {
                 script {
-                    def images = [
-                        'vprofile-business-register-app-image',
-                        'vprofile-business-register-web-image',
-                        'vprofile-business-register-db-image',
-                        'vprofile-business-register-mc-image',
-                        'vprofile-business-register-ng-image'
-
-                    ]
                     docker.withRegistry (vprofileRegistry, registryCredential) {
                         images.each { imageName ->
                             try {
@@ -187,6 +194,7 @@ pipeline {
                                     withAWS(credentials: 'AWS', region: 'us-east-1') {
                                         sh """
                                         docker push ${ECR_REPO}/${imageName}:${IMAGE_TAG}
+                                        docker push ${ECR_REPO}/${imageName}:latest
                                         """
                                     }
                                 } catch (Exception PushFail) {
