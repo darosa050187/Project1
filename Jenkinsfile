@@ -167,6 +167,7 @@ pipeline {
                         'vprofile-business-register-web-image',
                         'vprofile-business-register-db-image',
                         'vprofile-business-register-mc-image'
+                        
                     ]
                     docker.withRegistry (vprofileRegistry, registryCredential) {
                         images.each { imageName ->
