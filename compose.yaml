@@ -42,6 +42,13 @@ services:
       container_name: vproweb
       ports:
         - "80:80"
+  vprongnix:
+      build: 
+        context: ./Docker-files/ng
+      image: vprofile-business-register-ng-image
+      container_name: vprong
+      ports:
+        - "80:80"
 volumes:
   vprodbdata: {}
   vproappdata: {}
