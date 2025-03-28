@@ -42,7 +42,7 @@ pipeline {
         vprofileRegistry = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vprofile-app-ecs-cluster"
         service = "vprofile-app-ecs-service"
-        IMAGE_TAG = "1.0.1"
+        IMAGE_TAG = "1.0.2"
         COMPOSE_FILE = "compose.yaml"
         AWS_ACCOUNT_ID = "084828572941"
         AWS_DEFAULT_REGION = "us-east-1"
