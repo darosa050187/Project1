@@ -4,7 +4,7 @@ LABEL "Project"="Vprofile" \
       "Version"="1.0.1" \
       "environment"="Test"
 RUN git clone https://github.com/darosa050187/Project1.git
-RUN cd project1 && git checkout awscontainers && mvn install
+RUN cd Project1 && git checkout awscontainers && mvn install
 
 # Runtime stage
 FROM tomcat:10-jdk21
