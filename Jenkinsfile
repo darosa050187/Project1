@@ -21,9 +21,7 @@ def images = [
                         'vprofile-business-register-app-image',
                         'vprofile-business-register-web-image',
                         'vprofile-business-register-db-image',
-                        'vprofile-business-register-mc-image',
-                        'vprofile-business-register-ng-image'
-
+                        'vprofile-business-register-mc-image'
 ]
 
 pipeline {
