@@ -156,7 +156,7 @@ pipeline {
                     sh "docker tag vprofile-business-register-web-image $ECR_REPO/vprofile-business-register-web-image:$IMAGE_TAG"
                     sh "docker tag vprofile-business-register-db-image $ECR_REPO/vprofile-business-register-db-image:$IMAGE_TAG"
                     sh "docker tag vprofile-business-register-mc-image $ECR_REPO/vprofile-business-register-mc-image:$IMAGE_TAG"
-                    sh "docker tag vprofile-business-register-mc-image $ECR_REPO/vprofile-business-register-ng-image:$IMAGE_TAG"
+                    sh "docker tag vprofile-business-register-ng-image $ECR_REPO/vprofile-business-register-ng-image:$IMAGE_TAG"
                 } 
             }
         }
@@ -167,7 +167,7 @@ pipeline {
                         'vprofile-business-register-app-image',
                         'vprofile-business-register-web-image',
                         'vprofile-business-register-db-image',
-                        'vprofile-business-register-mc-image'n
+                        'vprofile-business-register-mc-image'
                         'vprofile-business-register-ng-image'
 
                     ]
