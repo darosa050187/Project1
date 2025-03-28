@@ -1,9 +1,13 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: db-pv-claim
   labels:
     app: vprodb
+    environment: dev
+  annotations:
+    description: "This is persistent volume for mysql data"
+    kubernetes.io/service-account.name: vprofile
+    kubernetes.io/created-by: darosa87
 spec:
   storageClassName: default
   accessModes:

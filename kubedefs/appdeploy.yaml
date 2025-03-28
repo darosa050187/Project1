@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: vproapp
-        image: vprocontainers/vprofileapp
+        image: darosa87/vprofileapp
         imagePullPolicy: Always
         ports:
         - name: vproapp-port
@@ -28,3 +28,6 @@ spec:
       - name: init-memcache
         image: busybox
         command: ['sh', '-c', 'until nslookup vprocache01.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;']
+      - name: init-rabbitmq
+        image: busybox
+        command: ['sh', '-c', 'until nslookup vpromq01.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;']
