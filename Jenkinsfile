@@ -191,8 +191,8 @@ pipeline {
                                 try {
                                     withAWS(credentials: 'AWS', region: 'us-east-1') {
                                         sh """
-                                        docker push --force ${ECR_REPO}/${imageName}:${IMAGE_TAG}
-                                        docker push --force ${ECR_REPO}/${imageName}:latest
+                                        docker push ${ECR_REPO}/${imageName}:${IMAGE_TAG}
+                                        docker push ${ECR_REPO}/${imageName}:latest
                                         """
                                     }
                                 } catch (Exception PushFail) {
